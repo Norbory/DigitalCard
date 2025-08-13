@@ -4,29 +4,96 @@ import { Canvas, extend, useThree, useFrame } from '@react-three/fiber'
 import { useGLTF, useTexture, Environment, Lightformer } from '@react-three/drei'
 import { BallCollider, CuboidCollider, Physics, RigidBody, useRopeJoint, useSphericalJoint } from '@react-three/rapier'
 import { MeshLineGeometry, MeshLineMaterial } from 'meshline'
+import './App.css'
 
 extend({ MeshLineGeometry, MeshLineMaterial })
 useTexture.preload('banda.jpg')
 
 export default function App() {
+  const [imagen, setImagen] = useState('tomie.jpg')
+
   return (
-    <Canvas camera={{ position: [0, 0, 13], fov: 25 }}>
-      <ambientLight intensity={Math.PI} />
-      <Physics interpolate gravity={[0, -40, 0]} timeStep={1 / 60}>
-        <Band />
-      </Physics>
-      <Environment background blur={0.75}>
-        <color attach="background" args={['black']} />
-        <Lightformer intensity={2} color="white" position={[0, -1, 5]} rotation={[0, 0, Math.PI / 3]} scale={[100, 0.1, 1]} />
-        <Lightformer intensity={3} color="white" position={[-1, -1, 1]} rotation={[0, 0, Math.PI / 3]} scale={[100, 0.1, 1]} />
-        <Lightformer intensity={3} color="white" position={[1, 1, 1]} rotation={[0, 0, Math.PI / 3]} scale={[100, 0.1, 1]} />
-        <Lightformer intensity={10} color="white" position={[-10, 0, 14]} rotation={[0, Math.PI / 2, Math.PI / 3]} scale={[100, 10, 1]} />
-      </Environment>
-    </Canvas>
+    <main className='padre-contenedor'>
+      <nav></nav>
+      <section className='contenedor-3d'>
+        <Canvas camera={{ position: [0, 0, 13], fov: 25 }}>
+          <ambientLight intensity={Math.PI} />
+          <Physics interpolate gravity={[0, -40, 0]} timeStep={1 / 60}>
+            <Band 
+              cobertura={imagen}
+            />
+          </Physics>
+          <Environment background blur={0.75}>
+            <color attach="background" args={['black']} />
+            <Lightformer intensity={2} color="white" position={[0, -1, 5]} rotation={[0, 0, Math.PI / 3]} scale={[100, 0.1, 1]} />
+            <Lightformer intensity={3} color="white" position={[-1, -1, 1]} rotation={[0, 0, Math.PI / 3]} scale={[100, 0.1, 1]} />
+            <Lightformer intensity={3} color="white" position={[1, 1, 1]} rotation={[0, 0, Math.PI / 3]} scale={[100, 0.1, 1]} />
+            <Lightformer intensity={10} color="white" position={[-10, 0, 14]} rotation={[0, Math.PI / 2, Math.PI / 3]} scale={[100, 10, 1]} />
+          </Environment>
+        </Canvas>
+        <div className='contenedor-informacion'>
+          <h1>Creador de credenciales interactivo</h1>
+          <p>
+            Este es un ejemplo de un creador de credenciales interactivo utilizando React Three Fiber y Rapier. Puedes arrastrar el ticket para posicionarlo en la banda.
+          </p>
+          <select name="Imagenes" id="opciones-imagenes" onChange={(e) => {
+            const value = e.target.value;
+            switch(value) {
+              case '1':
+                setImagen('tomie.jpg');
+                break;
+              case '2':
+                setImagen('carta.jpg');
+                break;
+              case '3':
+                setImagen('kyrie.webp');
+                break;
+              case '4':
+                setImagen('hamilton.jpg');
+                break;
+              default:
+                setImagen('tomie.jpg');
+            }
+          }}>
+            <option value="1">Tomie</option>
+            <option value="2">Carta de presentación</option>
+            <option value="3">Kyrie</option>
+            <option value="4">Hamilton</option>
+          </select>
+        </div>
+        <div className='contenedor-informacion-movil'>
+          <select name="Imagenes" id="opciones-imagenes" onChange={(e) => {
+            const value = e.target.value;
+            switch(value) {
+              case '1':
+                setImagen('tomie.jpg');
+                break;
+              case '2':
+                setImagen('carta.jpg');
+                break;
+              case '3':
+                setImagen('kyrie.webp');
+                break;
+              case '4':
+                setImagen('hamilton.jpg');
+                break;
+              default:
+                setImagen('tomie.jpg');
+            }
+          }}>
+            <option value="1">Tomie</option>
+            <option value="2">Carta de presentación</option>
+            <option value="3">Kyrie</option>
+            <option value="4">Hamilton</option>
+          </select>
+        </div>
+      </section>
+      <footer></footer>
+    </main>
   )
 }
 
-function Band({ maxSpeed = 50, minSpeed = 10 }) {
+function Band({ maxSpeed = 50, minSpeed = 10, cobertura = 'tomie.jpg' }) {
   const band = useRef(), fixed = useRef(), j1 = useRef(), j2 = useRef(), j3 = useRef(), card = useRef()
   const vec = new THREE.Vector3(), ang = new THREE.Vector3(), rot = new THREE.Vector3(), dir = new THREE.Vector3()
   const segmentProps = { type: 'dynamic', canSleep: true, colliders: false, angularDamping: 2, linearDamping: 2 }
@@ -38,12 +105,12 @@ function Band({ maxSpeed = 50, minSpeed = 10 }) {
   texture.wrapS = texture.wrapT = THREE.RepeatWrapping
 
   // Imagen del ticket (se ajusta a la parte delantera del tag)
-  const newTexture = useTexture('carta.jpg')
+  const newTexture = useTexture(cobertura)
   newTexture.wrapS = THREE.ClampToEdgeWrapping;
   newTexture.wrapT = THREE.ClampToEdgeWrapping;
-  newTexture.center.set(0, 0.5);
+  newTexture.center.set(0, 0.43);
   newTexture.rotation = Math.PI;
-  newTexture.repeat.set(-2, 1);
+  newTexture.repeat.set(-1.92, 1.3);
 
   const { width, height } = useThree((state) => state.size)
   const [curve] = useState(() => new THREE.CatmullRomCurve3([
