@@ -60,6 +60,65 @@ export default function App() {
             <option value="3">Kyrie</option>
             <option value="4">Hamilton</option>
           </select>
+          <p>
+            Personaliza tu credencial colocando tu propia imagen.
+          </p>
+          <input 
+            type="file"
+            onChange={(e) => {
+              const file = e.target.files[0];
+              if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                  const img = new Image();
+                  img.onload = () => {
+                    const aspectRatio = 19.2/13;
+
+                    let newWidth = img.width;
+                    let newHeight = img.height;
+
+                    // recortar manteniendo el 16:9
+                    if (img.width / img.height > aspectRatio) {
+                      // Imagen demasiado ancha → recortamos ancho
+                      newWidth = img.height * aspectRatio;
+                      newHeight = img.height;
+                    } else {
+                      // Imagen demasiado alta → recortamos alto
+                      newWidth = img.width;
+                      newHeight = img.width / aspectRatio;
+                    }
+
+                    const canvas = document.createElement("canvas");
+                    canvas.width = 1280; // tamaño final deseado (ejemplo)
+                    canvas.height = 720; // 16:9
+
+                    const ctx = canvas.getContext("2d");
+
+                    // recortamos desde el centro
+                    ctx.drawImage(
+                      img,
+                      (img.width - newWidth) / 2,
+                      (img.height - newHeight) / 2,
+                      newWidth,
+                      newHeight,
+                      0,
+                      0,
+                      canvas.width,
+                      canvas.height
+                    );
+
+                    const resizedImage = canvas.toDataURL("image/jpeg", 0.9);
+                    setImagen(resizedImage);
+                  };
+                  img.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+              }
+            }}
+            accept="image/*"
+          />
+          
+
         </div>
         <div className='contenedor-informacion-movil'>
           <select name="Imagenes" id="opciones-imagenes" onChange={(e) => {
@@ -87,6 +146,7 @@ export default function App() {
             <option value="4">Hamilton</option>
           </select>
         </div>
+
       </section>
       <footer></footer>
     </main>
@@ -98,7 +158,7 @@ function Band({ maxSpeed = 50, minSpeed = 10, cobertura = 'tomie.jpg' }) {
   const vec = new THREE.Vector3(), ang = new THREE.Vector3(), rot = new THREE.Vector3(), dir = new THREE.Vector3()
   const segmentProps = { type: 'dynamic', canSleep: true, colliders: false, angularDamping: 2, linearDamping: 2 }
 
-  const { nodes, materials } = useGLTF('carta.glb')
+  const { nodes, materials } = useGLTF('better.glb')
   
   // Banda
   const texture = useTexture('banda.jpg')
@@ -111,6 +171,14 @@ function Band({ maxSpeed = 50, minSpeed = 10, cobertura = 'tomie.jpg' }) {
   newTexture.center.set(0, 0.43);
   newTexture.rotation = Math.PI;
   newTexture.repeat.set(-1.92, 1.3);
+
+  // Imagen del ticket (se ajusta a la parte trasera del tag)
+  const newTexture1 = useTexture('qr.png')
+  newTexture1.wrapS = THREE.ClampToEdgeWrapping;
+  newTexture1.wrapT = THREE.ClampToEdgeWrapping;
+  newTexture1.center.set(0, 0.43);
+  newTexture1.rotation = Math.PI;
+  newTexture1.repeat.set(-1.92, 1.3);
 
   const { width, height } = useThree((state) => state.size)
   const [curve] = useState(() => new THREE.CatmullRomCurve3([
@@ -193,6 +261,16 @@ function Band({ maxSpeed = 50, minSpeed = 10, cobertura = 'tomie.jpg' }) {
             <mesh geometry={nodes.Frontal.geometry}>
               <meshPhysicalMaterial
                 map={newTexture}
+                map-anisotropy={16}
+                clearcoat={1}
+                clearcoatRoughness={0.2}
+                roughness={0.3}
+                metalness={0.6}
+              />
+            </mesh>
+            <mesh geometry={nodes.Posterior.geometry}>
+              <meshPhysicalMaterial
+                map={newTexture1}
                 map-anisotropy={16}
                 clearcoat={1}
                 clearcoatRoughness={0.2}
